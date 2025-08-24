@@ -1,5 +1,7 @@
+// Copyright (c) 2025 Qimen9
+// MIT License
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -80,7 +82,7 @@
         .wave:nth-child(3) {
             animation-delay: -8s;
             opacity: 0.7;
-            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg" fill="%231a1a2240"><path d="M0 0v46.29c47.79 22.2 103.59 32.17 158 28 70.36-5.37 136.33-33.31 206.8-37.5 73.84-4.36 147.54 16.88 218.2 35.26 69.27 18 138.3 24.88 209.4 13.08 36.15-6 69.85-17.84 104.45-29.34C989.49 25 1113-14.29 1200 52.47V0z" /></svg>');
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1200 120" xmlns="http://www.w3.org2000/svg" fill="%231a1a2240"><path d="M0 0v46.29c47.79 22.2 103.59 32.17 158 28 70.36-5.37 136.33-33.31 206.8-37.5 73.84-4.36 147.54 16.88 218.2 35.26 69.27 18 138.3 24.88 209.4 13.08 36.15-6 69.85-17.84 104.45-29.34C989.49 25 1113-14.29 1200 52.47V0z" /></svg>');
             background-size: 1200px 100px;
             border-radius: var(--border-radius-md);
         }
@@ -544,6 +546,17 @@
             }
         }
         
+        // 修复: 使用确定性算法生成分数，确保相同名字总是得到相同结果
+        function deterministicHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // 转换为32位整数
+            }
+            return Math.abs(hash);
+        }
+        
         function analyze() {
             const name = document.getElementById('nameInput').value.trim();
             if (!name) {
@@ -560,21 +573,19 @@
             // 显示结果区域
             document.getElementById('resultArea').style.display = 'block';
             
-            // 基于名字计算喷神指数
-            let score = 0;
-            for (let i = 0; i < name.length; i++) {
-                score += name.charCodeAt(i) * (i + 1);
-            }
-            score = (score % 85) + 15; // 确保分数在15-100之间
+            // 基于名字计算喷神指数 - 使用确定性算法
+            const hash = deterministicHash(name);
             
-            // 添加随机波动
-            score += Math.floor(Math.random() * 11) - 5;
-            score = Math.max(0, Math.min(100, score)); // 限制在0-100之间
+            // 使用哈希值生成确定性分数 (0-100)
+            let score = hash % 101;
             
-            // 妈的傻逼扣字能力数值有误我只能改成别的了，妈了个逼之后还他妈大小写写错了我服了
-            const queryAbility = Math.floor(score * 1.2 + 30);
-            const attackPower = Math.floor(score * 0.9 + 10);
-            const defensePower = Math.floor(100 - score * 0.6 + 20);
+            // 确保分数在合理范围内 (20-95)
+            score = Math.max(20, Math.min(95, score));
+            
+            // 使用确定性算法计算其他属性
+            const queryAbility = (hash % 41) + 60; // 60-100
+            const attackPower = (hash % 51) + 40;  // 40-90
+            const defensePower = 100 - ((hash % 31) + 40); // 30-60
             
             // 更新分数显示
             document.getElementById('scoreValue').textContent = score;
@@ -595,13 +606,13 @@
                 
                 // 根据分数设置评语
                 const comment = document.getElementById('comment');
-                if (score < 20) {
+                if (score < 30) {
                     comment.textContent = `${name}，互联网和平使者！您的存在让网络更和谐。`;
-                } else if (score < 40) {
+                } else if (score < 50) {
                     comment.textContent = `${name}，偶尔展露锋芒，但依然保持克制。`;
-                } else if (score < 60) {
+                } else if (score < 70) {
                     comment.textContent = `${name}，您拥有强大的语言天赋，能在辩论中占据上风！`;
-                } else if (score < 80) {
+                } else if (score < 85) {
                     comment.textContent = `${name}，键盘如刀，言语如剑！您已是互联网辩论高手！`;
                 } else {
                     comment.textContent = `${name}，喷系大手子本尊！您的言语能摧毁敌人的心理防线！`;
